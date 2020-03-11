@@ -4,6 +4,8 @@
   "main": "dist/index.js",
   "description": "A ready-to-launch User and Authentication system for those that don't want to build it",
   "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc -w",
     "dev": "ts-node src/app.ts",
     "prepublishOnly": "make build",
     "test": "make lint test",

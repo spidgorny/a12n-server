@@ -31,11 +31,12 @@ const routes = [
   router('/authorize', oauth2Authorize),
   router('/token', oauth2Token),
 
-
   router('/create-user', createUser),
+  router('/api/create-user', createUser),
 
   router('/login', login),
-  router('/logout', logout),
+  router('/api/login', login),
+  router('/api/logout', logout),
 
   router('/health', health),
   router('/introspect', introspect),
@@ -49,6 +50,11 @@ const routes = [
   router('/user/:id', user),
   router('/user/:id/log', userLog),
   router('/user/:id/member', group),
+
+  router('/api/user', users),
+  router('/api/user/:id', user),
+  router('/api/user/:id/log', userLog),
+  router('/api/user/:id/member', group),
 
   router('/changepassword', changePassword),
   router('/reset-password', resetPassword),
