@@ -14,13 +14,13 @@ export default async function log(
 
   if (isContext(arg1)) {
     await addLogEntry(
-      eventType,
-      arg1.ip(),
-      arg1.state.session.user && arg1.state.session.user.id ? arg1.state.session.user.id : null,
-      arg1.request.headers.get('User-Agent'),
+        eventType,
+        arg1.ip() || '',
+        arg1.state.session.user && arg1.state.session.user.id ? arg1.state.session.user.id : null,
+        arg1.request.headers.get('User-Agent') || '',
     );
   } else {
-    await addLogEntry(eventType, arg1, arg2, arg3);
+    await addLogEntry(eventType, arg1, arg2 || 0, arg3 || '');
   }
 
 }
