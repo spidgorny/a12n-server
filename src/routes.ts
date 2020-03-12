@@ -23,6 +23,7 @@ import users from './user/controller/collection';
 import user from './user/controller/item';
 import changePasswordRedirect from './well-known/controller/change-password';
 import oauth2Metadata from './well-known/controller/oauth2-metadata';
+import api from './api';
 
 const routes = [
   router('/', home),
@@ -32,11 +33,9 @@ const routes = [
   router('/token', oauth2Token),
 
   router('/create-user', createUser),
-  router('/api/create-user', createUser),
 
   router('/login', login),
-  router('/api/login', login),
-  router('/api/logout', logout),
+  router('/logout', logout),
 
   router('/health', health),
   router('/introspect', introspect),
@@ -51,6 +50,11 @@ const routes = [
   router('/user/:id/log', userLog),
   router('/user/:id/member', group),
 
+  router('/api/isAuth', api.isAuth),
+  router('/api/login', api.login.bind(api)),
+  router('/api/logout', api.logout),
+
+  router('/api/create-user', createUser),
   router('/api/user', users),
   router('/api/user/:id', user),
   router('/api/user/:id/log', userLog),

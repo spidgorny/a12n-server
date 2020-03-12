@@ -1,28 +1,31 @@
 import Controller from '@curveball/controller';
-import { Context } from '@curveball/core';
-import { NotFound } from '@curveball/http-errors';
-import querystring from 'querystring';
-import log from '../log/service';
-import { EventType } from '../log/types';
-import { getSetting } from '../server-settings';
-import * as userService from '../user/service';
-import { User } from '../user/types';
-import { loginForm } from './formats/html';
+import {Context} from '@curveball/core';
+import {NotFound} from '@curveball/http-errors';
+import log from './log/service';
+import {EventType} from './log/types';
+import {getSetting} from './server-settings';
+import * as userService from './user/service';
+import {User} from './user/types';
 
-class LoginController extends Controller {
+class ApiController extends Controller {
 
-  async get(ctx: Context) {
-    ctx.response.type = 'text/html';
-    ctx.response.body = loginForm(
-      ctx.query.msg,
-      ctx.query.error,
-      await getSetting('registration.enabled'),
-      await getSetting('totp')
-    );
-
+  async isAuth(ctx: Context) {
+    if (ctx.state.session.user) {
+      ctx.response.body = {
+        status: 'ok',
+      };
+    } else {
+      return this.redirectToLogin(ctx, 'not authorized', 'not authorized');
+    }
   }
 
-  async post(ctx: Context) {
+  // POST
+  async login(ctx: Context) {
+    // console.log('accepts', ctx.accepts());
+    if (ctx.request.method !== 'POST') {
+      return this.redirectToLogin(ctx, '', 'must be POST');
+    }
+
     let user: User;
     try {
       user = await userService.findByIdentity('mailto:' + ctx.request.body.userName);
@@ -60,18 +63,30 @@ class LoginController extends Controller {
       user: user,
     };
     log(EventType.loginSuccess, ctx);
-    ctx.status = 303;
-    ctx.response.headers.set('Location', '/');
-
+    ctx.response.body = {
+      status: 'ok',
+    };
   }
 
   async redirectToLogin(ctx: Context, msg: string, error: string) {
+    ctx.response.status = 401;
+    ctx.response.body = {
+      status: 'not authorized',
+      loginHere: '/api/login?userName=&password=',
+      msg,
+      error,
+    }
+  }
 
-    ctx.response.status = 303;
-    ctx.response.headers.set('Location', '/login?' + querystring.stringify({ msg, error }));
-
+  async logout(ctx: Context) {
+    ctx.state.session = {
+      user: null,
+    };
+    ctx.response.body = {
+      status: 'ok',
+    };
   }
 
 }
 
-export default new LoginController();
+export default new ApiController();

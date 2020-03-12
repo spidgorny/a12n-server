@@ -4,6 +4,9 @@ import * as oauth2Service from './../oauth2/service';
 
 const whitelistPath = [
   '/login',
+  '/api/isAuth',
+  '/api/login',
+  '/api/logout',
   '/assets',
   '/health',
   '/register',
