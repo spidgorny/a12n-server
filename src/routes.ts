@@ -24,6 +24,7 @@ import user from './user/controller/item';
 import changePasswordRedirect from './well-known/controller/change-password';
 import oauth2Metadata from './well-known/controller/oauth2-metadata';
 import api from './api';
+import trips from './trip/trips';
 
 const routes = [
   router('/', home),
@@ -54,6 +55,7 @@ const routes = [
   router('/api/login', api.login.bind(api)),
   router('/api/logout', api.logout.bind(api)),
   router('/api/register', api.register.bind(api)),
+  router('/api/trips', trips.trips.bind(trips)),
 
   router('/api/create-user', createUser),
   router('/api/user', users),
