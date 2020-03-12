@@ -50,9 +50,10 @@ const routes = [
   router('/user/:id/log', userLog),
   router('/user/:id/member', group),
 
-  router('/api/isAuth', api.isAuth),
+  router('/api/isAuth', api.isAuth.bind(api)),
   router('/api/login', api.login.bind(api)),
-  router('/api/logout', api.logout),
+  router('/api/logout', api.logout.bind(api)),
+  router('/api/register', api.register.bind(api)),
 
   router('/api/create-user', createUser),
   router('/api/user', users),

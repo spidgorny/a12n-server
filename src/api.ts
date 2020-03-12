@@ -15,7 +15,7 @@ class ApiController extends Controller {
         status: 'ok',
       };
     } else {
-      return this.redirectToLogin(ctx, 'not authorized', 'not authorized');
+      return this.redirectToLogin(ctx, 401, 'not authorized');
     }
   }
 
@@ -23,7 +23,7 @@ class ApiController extends Controller {
   async login(ctx: Context) {
     // console.log('accepts', ctx.accepts());
     if (ctx.request.method !== 'POST') {
-      return this.redirectToLogin(ctx, '', 'must be POST');
+      return this.redirectToLogin(ctx, 401, 'must be POST');
     }
 
     let user: User;
@@ -32,7 +32,7 @@ class ApiController extends Controller {
     } catch (err) {
       if (err instanceof NotFound) {
         log(EventType.loginFailed, ctx);
-        return this.redirectToLogin(ctx, '', 'Incorrect username or password');
+        return this.redirectToLogin(ctx, 401, 'Incorrect username or password');
       } else {
         throw err;
       }
@@ -40,23 +40,23 @@ class ApiController extends Controller {
 
     if (!await userService.validatePassword(user, ctx.request.body.password)) {
       log(EventType.loginFailed, ctx.ip(), user.id);
-      return this.redirectToLogin(ctx, '', 'Incorrect username or password');
+      return this.redirectToLogin(ctx, 401, 'Incorrect username or password');
     }
 
     if (!user.active) {
       log(EventType.loginFailedInactive, ctx.ip(), user.id, ctx.request.headers.get('User-Agent'));
-      return this.redirectToLogin(ctx, '', 'This account is inactive. Please contact Admin');
+      return this.redirectToLogin(ctx, 401, 'This account is inactive. Please contact Admin');
     }
 
     if (ctx.request.body.totp) {
       if (!await userService.validateTotp(user, ctx.request.body.totp)) {
         log(EventType.totpFailed, ctx.ip(), user.id);
-        return this.redirectToLogin(ctx, '', 'Incorrect TOTP code');
+        return this.redirectToLogin(ctx, 401, 'Incorrect TOTP code');
       }
     } else if (await userService.hasTotp(user)) {
-      return this.redirectToLogin(ctx, '', 'TOTP token required');
+      return this.redirectToLogin(ctx, 401, 'TOTP token required');
     } else if (await getSetting('totp') === 'required') {
-      return this.redirectToLogin(ctx, '', 'The system administrator has made TOTP tokens mandatory, but this user did not have a TOTP configured. Login is disabled');
+      return this.redirectToLogin(ctx, 401, 'The system administrator has made TOTP tokens mandatory, but this user did not have a TOTP configured. Login is disabled');
     }
 
     ctx.state.session = {
@@ -68,12 +68,12 @@ class ApiController extends Controller {
     };
   }
 
-  async redirectToLogin(ctx: Context, msg: string, error: string) {
-    ctx.response.status = 401;
+  async redirectToLogin(ctx: Context, code: number, error: string) {
+    ctx.response.status = code;
     ctx.response.body = {
       status: 'not authorized',
       loginHere: '/api/login?userName=&password=',
-      msg,
+      registerHere: '/api/register?emailAddress=&password=',
       error,
     }
   }
@@ -84,6 +84,33 @@ class ApiController extends Controller {
     };
     ctx.response.body = {
       status: 'ok',
+    };
+  }
+
+  async register(ctx: Context) {
+    try {
+      await userService.findByIdentity('mailto:' + ctx.request.body.emailAddress);
+      return this.redirectToLogin(ctx, 409, 'User already exists');
+    } catch (err) {
+      if (!(err instanceof NotFound)) {
+        throw err;
+      }
+    }
+
+    const user = await userService.save({
+      identity: 'mailto:' + ctx.request.body.emailAddress,
+      nickname: ctx.request.body.nickname,
+      created: new Date(),
+      type: 'user',
+      active: true    // automatically active
+    });
+
+    const userPassword = ctx.request.body.password;
+    await userService.createPassword(user, userPassword);
+
+    ctx.response.body = {
+      status: 'ok',
+      msg: 'Registration successful. Please log in',
     };
   }
 
