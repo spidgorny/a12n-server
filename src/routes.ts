@@ -56,6 +56,7 @@ const routes = [
   router('/api/logout', api.logout.bind(api)),
   router('/api/register', api.register.bind(api)),
   router('/api/trips', trips.trips.bind(trips)),
+  router('/api/addTrip', trips.save.bind(trips)),
 
   router('/api/create-user', createUser),
   router('/api/user', users),
