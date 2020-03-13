@@ -1,4 +1,5 @@
 // tslint:disable no-console
+require('source-map-support').install();
 import { Application } from '@curveball/core';
 
 import process from 'process';

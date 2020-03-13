@@ -1,21 +1,6 @@
 import database from "../database";
 import {NotFound} from "@curveball/http-errors";
-import {POJO} from "./POJO";
-
-export class Trip extends POJO {
-	id: string;	// uuid
-	user: number;
-	destination: string;
-	start_date: Date;
-	end_date: Date;
-	comment: string;
-
-	constructor(props: any) {
-		super(props);
-		Object.assign(this, props);
-	}
-
-}
+import {Trip} from "./trip";
 
 export class TripService {
 
@@ -54,10 +39,17 @@ export class TripService {
 		const query = 'INSERT INTO trip SET ?, created = CURRENT_TIMESTAMP()' +
 			'ON DUPLICATE KEY UPDATE ?';
 		const result = await database.query(query, [user, user]);
-		console.log('result', result);
+		// console.log('result', result);
 
-		const updatedTrip = new Trip(result[0]);
-		return updatedTrip;
+		return result;
+	}
+
+	async del(tripID: string): Promise<any> {
+		const query = 'DELETE FROM trip WHERE id = ?';
+		const result = await database.query(query, [tripID]);
+		// console.log('result', result);
+
+		return result;
 	}
 
 }
