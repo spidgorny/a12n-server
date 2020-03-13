@@ -3,7 +3,7 @@ import {NotFound} from "@curveball/http-errors";
 import {POJO} from "./POJO";
 
 export class Trip extends POJO {
-	id: number;
+	id: string;	// uuid
 	user: number;
 	destination: string;
 	start_date: Date;
